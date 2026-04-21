@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#2563eb" />
+<title>CCS Tech Requirements Board</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Thai", sans-serif;
+    background: #f5f6f8;
+    color: #1f2937;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (max-width: 640px) {
+    header { flex-direction: column; align-items: stretch; }
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #111827;
+  }
+  @media (max-width: 640px) {
+    h1 { font-size: 18px; }
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+  @media (max-width: 640px) {
+    .subtitle { font-size: 12px; }
+  }
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 640px) {
+    .toolbar { width: 100%; }
+    .toolbar button { flex: 1; min-width: 0; }
+  }
+  button {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 9px 14px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 38px;
+  }
+  button:hover { background: #f9fafb; border-color: #9ca3af; }
+  button:active { transform: translateY(1px); }
+  button.primary {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+  }
+  button.primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+  button.danger {
+    color: #dc2626;
+  }
+  button.danger:hover { background: #fef2f2; border-color: #fca5a5; }
+
+  .legend {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+  }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .legend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .legend-on { background: #dbeafe; color: #1e40af; }
+  .legend-off { background: #f3f4f6; color: #9ca3af; text-decoration: line-through; }
+
+  .mobile-hint {
+    display: none;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 640px) {
+    .mobile-hint { display: block; }
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .board { grid-template-columns: 1fr; gap: 14px; }
+  }
+
+  .column {
+    background: #eceef2;
+    border-radius: 10px;
+    padding: 12px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+  }
+  .column.drag-over {
+    background: #dbeafe;
+    outline: 2px dashed #3b82f6;
+  }
+  .column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  .column-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .must .column-title { color: #b91c1c; }
+  .should .column-title { color: #047857; }
+  .count-badge {
+    background: white;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+  .add-btn {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px dashed #9ca3af;
+    border-radius: 6px;
+    color: #6b7280;
+  }
+  .add-btn:hover { background: white; color: #374151; }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .card {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    cursor: grab;
+    border-left: 4px solid transparent;
+    transition: box-shadow 0.15s;
+    position: relative;
+  }
+  .card:hover { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.10); }
+  .card.dragging { opacity: 0.4; cursor: grabbing; }
+  .must .card { border-left-color: #dc2626; }
+  .should .card { border-left-color: #10b981; }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.35;
+    flex: 1;
+  }
+  .card-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .card:hover .card-actions { opacity: 1; }
+  /* Always show actions on touch devices */
+  @media (hover: none) {
+    .card-actions { opacity: 1; }
+  }
+  .icon-btn {
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #6b7280;
+    min-height: 32px;
+    min-width: 32px;
+  }
+  .icon-btn:hover { background: #f3f4f6; color: #111827; }
+  .icon-btn.delete:hover { background: #fef2f2; color: #dc2626; }
+
+  .card-description {
+    font-size: 12px;
+    color: #374151;
+    line-height: 1.5;
+    margin: 6px 0 8px 0;
+  }
+
+  .card-field {
+    font-size: 12px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  .card-field .label {
+    color: #9ca3af;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    margin-right: 4px;
+  }
+
+  .card-move-buttons {
+    display: none;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e5e7eb;
+  }
+  @media (hover: none), (max-width: 640px) {
+    .card-move-buttons { display: flex; }
+  }
+  .move-btn {
+    flex: 1;
+    font-size: 11px;
+    padding: 6px 8px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    color: #4b5563;
+    min-height: 32px;
+  }
+  .move-btn:hover { background: #e5e7eb; }
+
+  .role-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .role-chip {
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.12s;
+    user-select: none;
+    white-space: nowrap;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+  }
+  @media (max-width: 640px) {
+    .role-chip { font-size: 12px; padding: 6px 11px; }
+  }
+  .role-chip.on { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+  .role-chip.on:hover { background: #bfdbfe; }
+  .role-chip.off { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; text-decoration: line-through; }
+  .role-chip.off:hover { background: #e5e7eb; color: #6b7280; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 10px;
+    padding: 22px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  @media (max-width: 640px) {
+    .modal-overlay { padding: 0; align-items: stretch; }
+    .modal {
+      max-width: 100%;
+      max-height: 100vh;
+      height: 100vh;
+      border-radius: 0;
+      padding: 18px;
+    }
+  }
+  .modal h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #111827;
+  }
+  .form-group {
+    margin-bottom: 14px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #111827;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  @media (max-width: 640px) {
+    .modal-actions button { flex: 1; }
+  }
+  .modal .role-chips {
+    padding: 8px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+  }
+  .modal .role-chip {
+    font-size: 13px;
+    padding: 7px 13px;
+  }
+
+  .status-bar {
+    margin-top: 18px;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>CCS Tech Requirements Board</h1>
+    <div class="subtitle">Must / Should Have modules for the Co-operative Core System. Edit freely — your changes live in this browser only.</div>
+  </div>
+  <div class="toolbar">
+    <button onclick="exportJSON()">Export JSON</button>
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="resetToDefault()" class="danger">Reset</button>
+  </div>
+</header>
+
+<div class="mobile-hint">
+  Tip: on phone, use the <strong>→ Move</strong> / <strong>← Move</strong> buttons at the bottom of each card to switch columns.
+</div>
+
+<div class="legend">
+  <div class="legend-row">
+    <strong style="color:#374151;">Role access:</strong>
+    <span class="legend-chip legend-on">Has access</span>
+    <span class="legend-chip legend-off">No access</span>
+    <span style="color:#9ca3af;">Tap a chip to toggle.</span>
+  </div>
+</div>
+
+<div class="board">
+  <div class="column must" data-column="must" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+    <div class="column-header">
+      <span class="column-title">Must Have</span>
+      <span class="count-badge" id="count-must">0</span>
+    </div>
+    <button class="add-btn" onclick="openAddModal('must')">+ Add requirement</button>
+    <div class="cards" id="cards-must"></div>
+  </div>
+
+  <div class="column should" data-column="should" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+    <div class="column-header">
+      <span class="column-title">Should Have</span>
+      <span class="count-badge" id="count-should">0</span>
+    </div>
+    <button class="add-btn" onclick="openAddModal('should')">+ Add requirement</button>
+    <div class="cards" id="cards-should"></div>
+  </div>
+</div>
+
+<div class="status-bar" id="status-bar">Ready.</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-title">Add Requirement</h2>
+    <div class="form-group">
+      <label for="input-name">Module Name</label>
+      <input type="text" id="input-name" placeholder="e.g. Member & Share Management System" />
+    </div>
+    <div class="form-group">
+      <label for="input-desc">Description</label>
+      <textarea id="input-desc" placeholder="What this module does, what it covers, key capabilities"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="input-tor">TOR Mapping</label>
+      <input type="text" id="input-tor" placeholder="e.g. TOR §4.3.2(1)" />
+    </div>
+    <div class="form-group">
+      <label for="input-source">Source / Origin</label>
+      <select id="input-source">
+        <option value="TOR document">TOR document</option>
+        <option value="Tech Part slides">Tech Part slides</option>
+        <option value="CAD morning meeting">CAD morning meeting</option>
+        <option value="PSG afternoon meeting">PSG afternoon meeting</option>
+        <option value="TOR + Tech Part slides">TOR + Tech Part slides</option>
+        <option value="TOR + CAD morning meeting">TOR + CAD morning meeting</option>
+        <option value="TOR + PSG afternoon meeting">TOR + PSG afternoon meeting</option>
+        <option value="Tech Part slides + CAD morning meeting">Tech Part slides + CAD morning meeting</option>
+        <option value="Custom">Custom…</option>
+      </select>
+    </div>
+    <div class="form-group" id="custom-source-group" style="display:none;">
+      <label for="input-source-custom">Custom Source</label>
+      <input type="text" id="input-source-custom" placeholder="Enter custom source" />
+    </div>
+    <div class="form-group">
+      <label>Role Access</label>
+      <div class="role-chips" id="modal-roles"></div>
+    </div>
+    <div class="form-group">
+      <label for="input-column">Column</label>
+      <select id="input-column">
+        <option value="must">Must Have</option>
+        <option value="should">Should Have</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="primary" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ROLES = [
+    { key: "director",    label: "ผู้อำนวยการ" },
+    { key: "manager",     label: "ผู้จัดการสหกรณ์" },
+    { key: "staff",       label: "เจ้าหน้าที่" },
+    { key: "member",      label: "สมาชิก" },
+    { key: "cad",         label: "กรมตรวจบัญชี" },
+    { key: "auditor",     label: "ผู้สอบบัญชี" },
+    { key: "bank",        label: "ธนาคารพันธมิตร" },
+    { key: "public",      label: "ประชาชนทั่วไป" },
+  ];
+
+  const ra = (obj) => {
+    const out = {};
+    ROLES.forEach(r => out[r.key] = !!obj[r.key]);
+    return out;
+  };
+
+  const defaultItems = [
+    { id: 1, col: "must",
+      name: "Member & Share Management System",
+      desc: "Core registry of cooperative members and their shareholdings. Handles member profile data, share balances, collateral/guarantor records, share-to-loan ratios, dividend calculation, member-facing communication, and member notifications/alerts. Also covers digital membership onboarding.",
+      tor: "TOR §4.3.2(1)", source: "TOR document",
+      access: ra({ director:true, manager:true, staff:true, member:true, cad:true, auditor:true }) },
+    { id: 2, col: "must",
+      name: "Deposit & Payment System",
+      desc: "All deposit account operations: deposits, withdrawals, interest rate configuration, account opening/closing, account-type-specific rules, tax withholding, and cash/cheque handling. Interfaces with the bank payment gateway for external transactions.",
+      tor: "TOR §4.3.2(2)", source: "TOR document",
+      access: ra({ director:true, manager:true, staff:true, member:true, cad:true, auditor:true, bank:true }) },
+    { id: 3, col: "must",
+      name: "Loan Management & Risk Assessment System",
+      desc: "End-to-end loan lifecycle: loan application, origination, servicing, credit-limit and collateral calculation, collateral records, installment/amortization calculation, risk assessment and monitoring.",
+      tor: "TOR §4.3.2(3)", source: "TOR document",
+      access: ra({ director:true, manager:true, staff:true, member:true, cad:true, auditor:true }) },
+    { id: 4, col: "must",
+      name: "Investment Management System",
+      desc: "Manages the cooperative's investment portfolio: investment limit calculation, security holding periods, par/market valuation, and investment decisions within regulatory limits.",
+      tor: "TOR §4.3.2(4)", source: "TOR document",
+      access: ra({ director:true, manager:true, staff:true, cad:true, auditor:true }) },
+    { id: 5, col: "must",
+      name: "Financial Accounting & Reporting System",
+      desc: "General ledger and financial reporting: chart of accounts, member transaction status, financial statements, management reports, and baseline analytics for day-to-day operations.",
+      tor: "TOR §4.3.2(5)", source: "TOR document",
+      access: ra({ director:true, manager:true, staff:true, cad:true, auditor:true }) },
+    { id: 6, col: "must",
+      name: "Regulatory Compliance & Audit System",
+      desc: "Built-in compliance enforcement: condition/rule checking on transactions, regulatory rule compliance, and statutory reporting. Where cooperative bylaws and statutory rules get enforced at the transaction layer.",
+      tor: "TOR §4.3.2(6)", source: "TOR document",
+      access: ra({ director:true, manager:true, cad:true, auditor:true }) },
+    { id: 7, col: "must",
+      name: "Import-Export Data System",
+      desc: "Text/CSV/Excel file import and export, report output, operational status displays, and configurable report templates for management, staff, members, and the regulator.",
+      tor: "TOR §4.3.2(7)", source: "TOR document",
+      access: ra({ director:true, manager:true, staff:true, cad:true, auditor:true }) },
+    { id: 8, col: "must",
+      name: "Security & Data Protection System",
+      desc: "Foundational security: Multi-Factor Authentication (MFA), Role-Based Access Control (RBAC), encryption at the highest standard, Audit Log & Monitoring, Backup & Disaster Recovery, and threat/data protection.",
+      tor: "TOR §4.3.2(8)", source: "TOR document",
+      access: ra({ director:true, manager:true, staff:true, cad:true, auditor:true }) },
+    { id: 9, col: "must",
+      name: "Multi-Layered Security Framework",
+      desc: "Defense-in-depth architecture spanning Network Security (Firewall, IPS/IDS, segmentation), Connection Security (VPN, SSL/TLS, certificates), Application Security (WAF, API security, DB protection), IAM (MFA, RBAC, PAM), and Data Protection (encryption, DLP, governance).",
+      tor: "TOR §4.3.3", source: "TOR document",
+      access: ra({ director:true, manager:true, cad:true, auditor:true }) },
+    { id: 10, col: "must",
+      name: "Cloud Infrastructure & High-Availability Platform",
+      desc: "Cloud deployment following ISO/IEC 27017, 27018, Cloud Security Alliance, NIST Cybersecurity Framework, SOC 2 Type II, Cloud First Policy, and Multi-cloud / Hybrid Cloud Strategy. Data center follows TIA-942 with HA, load balancing, auto-scaling, capacity management, and defined backup/redundancy.",
+      tor: "TOR §4.3.4", source: "TOR document",
+      access: ra({ director:true, manager:true, cad:true }) },
+    { id: 11, col: "must",
+      name: "Disaster Recovery & Business Continuity",
+      desc: "DR site, BCP, defined RTO/RPO per system, data replication, failover procedures, and a regular DR test plan. Aligns with storing data on cloud with a cloud-hosted DR site.",
+      tor: "TOR §4.3.4(3)", source: "TOR + CAD morning meeting",
+      access: ra({ director:true, manager:true, cad:true }) },
+    { id: 12, col: "must",
+      name: "Central Cooperative Data Integration Layer (API Gateway)",
+      desc: "Central hub connecting cooperatives to CCS and to partner banks. Includes API Gateway, Authentication & Authorization, standardized data exchange formats, Security & Encryption. Also hosts the bank payment gateway integration (cooperatives routing payments via corporate banking of partner banks).",
+      tor: "TOR §4.3.5", source: "TOR + CAD morning meeting",
+      access: ra({ director:true, manager:true, staff:true, cad:true, bank:true }) },
+    { id: 13, col: "must",
+      name: "Enterprise Architecture Foundation",
+      desc: "Architectural backbone: Business Architecture, Application Architecture (Microservices + Cloud-Ready), Data Architecture + Data Governance Framework, Technology Architecture. Designed for High Availability, Disaster Recovery readiness, and Zero Trust Network Architecture.",
+      tor: "TOR §4.3.1", source: "TOR document",
+      access: ra({ director:true, manager:true, cad:true }) },
+    { id: 14, col: "must",
+      name: "KYC / CDD / AML Compliance Capabilities",
+      desc: "Know Your Customer, Customer Due Diligence, AML/CTF measures, Cash Transaction Report, and Suspicious Transaction Report generation. Scope of KYC for internal transfers is a policy question still to be resolved.",
+      tor: "TOR §4.5.3", source: "TOR + PSG afternoon meeting",
+      access: ra({ director:true, manager:true, staff:true, cad:true, auditor:true }) },
+    { id: 15, col: "must",
+      name: "Data Permission & Classification Management",
+      desc: "Granular permissioning on cooperative data: who can see what, under what consent model, at what classification tier. Cooperatives control which data CAD and other parties can access. Supports the principle that a cooperative must grant CAD permission before CCS API services are available.",
+      tor: "TOR §4.5.2", source: "TOR + CAD morning meeting",
+      access: ra({ director:true, manager:true, cad:true }) },
+
+    { id: 16, col: "should",
+      name: "Real-Time Risk Monitoring & Early Warning System",
+      desc: "Real-time risk analysis and pre-emptive alerting so the regulator can monitor risk live rather than only through periodic audits.",
+      tor: "TOR §2.3 / §4.3.2", source: "TOR document",
+      access: ra({ director:true, manager:true, cad:true, auditor:true }) },
+    { id: 17, col: "should",
+      name: "Fraud Monitoring & Anomaly Detection",
+      desc: "Active monitoring for transaction fraud, suspicious patterns, and specifically the dormant-account fraud risk raised in the CAD meeting (concern that CCS could create opportunities for managers to commit fraud on inactive accounts).",
+      tor: "TOR §1", source: "TOR + CAD morning meeting",
+      access: ra({ director:true, manager:true, cad:true, auditor:true }) },
+    { id: 18, col: "should",
+      name: "Knowledge Management System",
+      desc: "Knowledge-management layer on top of core operations to capture institutional knowledge, support decision-making, and improve continuity across cooperatives.",
+      tor: "Not in TOR", source: "CAD morning meeting",
+      access: ra({ director:true, manager:true, staff:true, member:true, cad:true }) },
+    { id: 19, col: "should",
+      name: "Best Practice Dashboard / Benchmarking",
+      desc: "Comparative dashboard showing best-practice benchmarks across the cooperative sector — visibility into how a cooperative performs relative to peers.",
+      tor: "Not in TOR", source: "Tech Part slides",
+      access: ra({ director:true, manager:true, cad:true }) },
+    { id: 20, col: "should",
+      name: "Investment Template Library",
+      desc: "Pre-built investment templates cooperatives can apply — lowers the skill barrier for smaller cooperatives without in-house investment expertise.",
+      tor: "Not in TOR", source: "Tech Part slides",
+      access: ra({ director:true, manager:true, staff:true, cad:true }) },
+    { id: 21, col: "should",
+      name: "Credit Scoring Engine",
+      desc: "Automated credit scoring layered above the Loan Management System to standardize credit decisions across cooperatives.",
+      tor: "Not in TOR", source: "Tech Part slides",
+      access: ra({ director:true, manager:true, staff:true, cad:true, auditor:true }) },
+    { id: 22, col: "should",
+      name: "Matching Fund Dashboard",
+      desc: "Dashboard for visibility into matching-fund arrangements — likely for cross-cooperative liquidity or government matching-fund programs.",
+      tor: "Not in TOR", source: "Tech Part slides",
+      access: ra({ director:true, manager:true, cad:true }) },
+    { id: 23, col: "should",
+      name: "Financial Health Analytics (4-Aspect Framework)",
+      desc: "The 4 financial-health aspects used by the Department of Cooperative Promotion and the Cooperative Auditing Department, embedded in CCS as analytical dimensions.",
+      tor: "Not in TOR", source: "CAD morning meeting",
+      access: ra({ director:true, manager:true, cad:true, auditor:true }) },
+    { id: 24, col: "should",
+      name: "Tiered Deployment Model (L / M / S Cooperatives)",
+      desc: "System offered in multiple deployment models by cooperative size: Cloud-based full package for Large, SaaS (subscription, lighter) for Medium, and a to-be-defined model for Small cooperatives where full bank integration may be impractical.",
+      tor: "TOR §4.2.7", source: "TOR + CAD morning meeting",
+      access: ra({ director:true, manager:true, cad:true }) },
+    { id: 25, col: "should",
+      name: "Digital Membership Onboarding Flow",
+      desc: "End-to-end digital onboarding for new cooperative members: identity verification, consent capture, account provisioning. Raised in the CAD meeting as a design question not yet answered.",
+      tor: "Not in TOR", source: "CAD morning meeting",
+      access: ra({ manager:true, staff:true, member:true, cad:true, public:true }) },
+    { id: 26, col: "should",
+      name: "Configurable Payment Cut-Off Cycles",
+      desc: "Per-cooperative configuration of payment cut-off timing, since this depends on each cooperative's chosen payment-gateway arrangement.",
+      tor: "Not in TOR", source: "CAD morning meeting",
+      access: ra({ director:true, manager:true, staff:true, cad:true, bank:true }) },
+    { id: 27, col: "should",
+      name: "Member Demographics Analytics",
+      desc: "Analytical views on member demographics (average age, age bands, concentration in elderly cohorts). Relevant to succession, inheritance, and dormant-account risk considerations.",
+      tor: "Not in TOR", source: "CAD morning meeting",
+      access: ra({ director:true, manager:true, cad:true }) },
+    { id: 28, col: "should",
+      name: "Gap Analysis / As-Is → To-Be Tooling",
+      desc: "Supports the study-phase requirement: As-Is → To-Be analysis, Business Impact Analysis, IT risk analysis, and gap identification across cooperatives and governance practices.",
+      tor: "TOR §4.2.8", source: "TOR + CAD morning meeting",
+      access: ra({ director:true, manager:true, cad:true, auditor:true }) },
+  ];
+
+  let items = JSON.parse(JSON.stringify(defaultItems));
+  let nextId = Math.max(...items.map(i => i.id)) + 1;
+  let editingId = null;
+  let modalAccess = {};
+
+  function render() {
+    ["must", "should"].forEach(col => {
+      const container = document.getElementById(`cards-${col}`);
+      container.innerHTML = "";
+      const colItems = items.filter(i => i.col === col);
+      document.getElementById(`count-${col}`).textContent = colItems.length;
+      colItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.draggable = true;
+        card.dataset.id = item.id;
+        card.ondragstart = handleDragStart;
+        card.ondragend = handleDragEnd;
+
+        const chipsHtml = ROLES.map(r => {
+          const on = !!(item.access && item.access[r.key]);
+          return `<span class="role-chip ${on?'on':'off'}" data-role="${r.key}" onclick="toggleRole(event, ${item.id}, '${r.key}')">${escapeHtml(r.label)}</span>`;
+        }).join("");
+
+        const otherCol = item.col === "must" ? "should" : "must";
+        const otherLabel = otherCol === "must" ? "← Move to Must" : "Move to Should →";
+
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-title">${escapeHtml(item.name)}</div>
+            <div class="card-actions">
+              <button class="icon-btn" title="Edit" onclick="openEditModal(${item.id})">✎</button>
+              <button class="icon-btn delete" title="Delete" onclick="deleteItem(${item.id})">✕</button>
+            </div>
+          </div>
+          ${item.desc ? `<div class="card-description">${escapeHtml(item.desc)}</div>` : ""}
+          <div class="card-field"><span class="label">TOR</span>${escapeHtml(item.tor || "—")}</div>
+          <div class="card-field"><span class="label">Source</span>${escapeHtml(item.source || "—")}</div>
+          <div class="card-field"><span class="label">Access</span></div>
+          <div class="role-chips">${chipsHtml}</div>
+          <div class="card-move-buttons">
+            <button class="move-btn" onclick="moveItem(${item.id}, '${otherCol}')">${otherLabel}</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    });
+    setStatus(`${items.length} requirements · ${items.filter(i=>i.col==='must').length} must · ${items.filter(i=>i.col==='should').length} should`);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function setStatus(msg) {
+    document.getElementById("status-bar").textContent = msg;
+  }
+
+  function toggleRole(e, id, roleKey) {
+    e.stopPropagation();
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    if (!item.access) item.access = {};
+    item.access[roleKey] = !item.access[roleKey];
+    render();
+  }
+
+  function moveItem(id, col) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    item.col = col;
+    render();
+  }
+
+  let draggedId = null;
+
+  function handleDragStart(e) {
+    draggedId = parseInt(e.currentTarget.dataset.id);
+    e.currentTarget.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  }
+  function handleDragEnd(e) {
+    e.currentTarget.classList.remove("dragging");
+    document.querySelectorAll(".column").forEach(c => c.classList.remove("drag-over"));
+  }
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add("drag-over");
+    e.dataTransfer.dropEffect = "move";
+  }
+  function handleDragLeave(e) {
+    if (e.currentTarget === e.target) {
+      e.currentTarget.classList.remove("drag-over");
+    }
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove("drag-over");
+    const newCol = e.currentTarget.dataset.column;
+    const item = items.find(i => i.id === draggedId);
+    if (item && item.col !== newCol) {
+      item.col = newCol;
+      render();
+    }
+  }
+
+  function renderModalRoles() {
+    const container = document.getElementById("modal-roles");
+    container.innerHTML = ROLES.map(r => {
+      const on = !!modalAccess[r.key];
+      return `<span class="role-chip ${on?'on':'off'}" data-role="${r.key}" onclick="toggleModalRole('${r.key}')">${escapeHtml(r.label)}</span>`;
+    }).join("");
+  }
+
+  function toggleModalRole(key) {
+    modalAccess[key] = !modalAccess[key];
+    renderModalRoles();
+  }
+
+  function openAddModal(col) {
+    editingId = null;
+    modalAccess = {};
+    ROLES.forEach(r => modalAccess[r.key] = false);
+    document.getElementById("modal-title").textContent = "Add Requirement";
+    document.getElementById("input-name").value = "";
+    document.getElementById("input-desc").value = "";
+    document.getElementById("input-tor").value = "";
+    document.getElementById("input-source").value = "TOR document";
+    document.getElementById("input-source-custom").value = "";
+    document.getElementById("custom-source-group").style.display = "none";
+    document.getElementById("input-column").value = col;
+    renderModalRoles();
+    document.getElementById("modal-overlay").classList.add("active");
+    setTimeout(() => document.getElementById("input-name").focus(), 50);
+  }
+
+  function openEditModal(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    editingId = id;
+    modalAccess = { ...(item.access || {}) };
+    ROLES.forEach(r => { if (!(r.key in modalAccess)) modalAccess[r.key] = false; });
+    document.getElementById("modal-title").textContent = "Edit Requirement";
+    document.getElementById("input-name").value = item.name;
+    document.getElementById("input-desc").value = item.desc || "";
+    document.getElementById("input-tor").value = item.tor;
+    const srcSelect = document.getElementById("input-source");
+    const known = [...srcSelect.options].some(o => o.value === item.source && o.value !== "Custom");
+    if (known) {
+      srcSelect.value = item.source;
+      document.getElementById("custom-source-group").style.display = "none";
+      document.getElementById("input-source-custom").value = "";
+    } else {
+      srcSelect.value = "Custom";
+      document.getElementById("custom-source-group").style.display = "block";
+      document.getElementById("input-source-custom").value = item.source;
+    }
+    document.getElementById("input-column").value = item.col;
+    renderModalRoles();
+    document.getElementById("modal-overlay").classList.add("active");
+    setTimeout(() => document.getElementById("input-name").focus(), 50);
+  }
+
+  function closeModal() {
+    document.getElementById("modal-overlay").classList.remove("active");
+    editingId = null;
+  }
+
+  function saveModal() {
+    const name = document.getElementById("input-name").value.trim();
+    const desc = document.getElementById("input-desc").value.trim();
+    const tor = document.getElementById("input-tor").value.trim();
+    let source = document.getElementById("input-source").value;
+    if (source === "Custom") {
+      source = document.getElementById("input-source-custom").value.trim() || "—";
+    }
+    const col = document.getElementById("input-column").value;
+    if (!name) {
+      alert("Module name is required.");
+      return;
+    }
+    const accessCopy = { ...modalAccess };
+    if (editingId === null) {
+      items.push({ id: nextId++, col, name, desc, tor, source, access: accessCopy });
+    } else {
+      const item = items.find(i => i.id === editingId);
+      if (item) {
+        item.name = name;
+        item.desc = desc;
+        item.tor = tor;
+        item.source = source;
+        item.col = col;
+        item.access = accessCopy;
+      }
+    }
+    closeModal();
+    render();
+  }
+
+  document.getElementById("input-source").addEventListener("change", (e) => {
+    document.getElementById("custom-source-group").style.display =
+      e.target.value === "Custom" ? "block" : "none";
+  });
+
+  function deleteItem(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    if (!confirm(`Delete "${item.name}"?`)) return;
+    items = items.filter(i => i.id !== id);
+    render();
+  }
+
+  function download(filename, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportJSON() {
+    const serialize = (i) => ({
+      name: i.name,
+      description: i.desc || "",
+      tor_mapping: i.tor,
+      source: i.source,
+      access: ROLES.reduce((acc, r) => { acc[r.label] = !!(i.access && i.access[r.key]); return acc; }, {})
+    });
+    const data = {
+      exported_at: new Date().toISOString(),
+      must_have: items.filter(i => i.col === "must").map(serialize),
+      should_have: items.filter(i => i.col === "should").map(serialize),
+    };
+    download("ccs-tech-requirements.json", JSON.stringify(data, null, 2), "application/json");
+    setStatus("Exported ccs-tech-requirements.json");
+  }
+
+  function exportCSV() {
+    const header = ["Priority", "Module Name", "Description", "TOR Mapping", "Source", ...ROLES.map(r => r.label)];
+    const rows = [header];
+    items.forEach(i => {
+      const base = [
+        i.col === "must" ? "Must Have" : "Should Have",
+        i.name,
+        i.desc || "",
+        i.tor,
+        i.source,
+      ];
+      const roleCols = ROLES.map(r => (i.access && i.access[r.key]) ? "✓" : "");
+      rows.push([...base, ...roleCols]);
+    });
+    const csv = rows.map(r =>
+      r.map(c => {
+        const s = String(c ?? "");
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      }).join(",")
+    ).join("\n");
+    download("ccs-tech-requirements.csv", "\uFEFF" + csv, "text/csv;charset=utf-8");
+    setStatus("Exported ccs-tech-requirements.csv");
+  }
+
+  function resetToDefault() {
+    if (!confirm("Reset all changes and restore the default list?")) return;
+    items = JSON.parse(JSON.stringify(defaultItems));
+    nextId = Math.max(...items.map(i => i.id)) + 1;
+    render();
+    setStatus("Reset to default.");
+  }
+
+  document.getElementById("modal-overlay").addEventListener("click", (e) => {
+    if (e.target.id === "modal-overlay") closeModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
